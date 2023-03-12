@@ -13,7 +13,6 @@ import {
   Button,
   chakra,
 } from "@chakra-ui/react";
-import { postSignup } from "@/api/auth";
 import REGEX from "@/constants/regex";
 
 const Signup = () => {
