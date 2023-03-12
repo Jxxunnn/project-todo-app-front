@@ -1,60 +1,99 @@
-import React, { ChangeEvent, useState } from "react";
+import { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { setToken } from "@/utils/storage";
+import { usePostSignUpMutation } from "@/hooks/queries/auth";
 import {
   FormControl,
   FormLabel,
-  FormErrorMessage,
   FormHelperText,
   Input,
   Heading,
   Center,
   Button,
+  chakra,
 } from "@chakra-ui/react";
+import { postSignup } from "@/api/auth";
+import REGEX from "@/constants/regex";
 
 const Signup = () => {
-  const [emailInput, setEmailInput] = useState("");
-  const [passwordInput, setPasswordInput] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm();
 
-  const handleEmailInputChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setEmailInput(e.target.value);
-
-  const handlePasswordInputChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setPasswordInput(e.target.value);
-
-  const isEmailError = emailInput === "";
+  const navigate = useNavigate();
+  const postSignupMutation = usePostSignUpMutation();
 
   return (
     <>
       <Heading>
         <Center>회원 가입</Center>
       </Heading>
-      <FormControl isInvalid={isEmailError}>
-        <FormLabel>Email</FormLabel>
-        <Input
-          type="email"
-          value={emailInput}
-          onChange={handleEmailInputChange}
-        />
-        {!isEmailError ? (
-          <FormHelperText>이메일을 입력하세요</FormHelperText>
-        ) : (
-          <FormErrorMessage>이메일을 입력하세요</FormErrorMessage>
+      <chakra.form
+        onSubmit={handleSubmit(({ email, password }) =>
+          postSignupMutation.mutateAsync(
+            { email, password },
+            {
+              onSuccess: ({ message, token }) => {
+                window.alert(message);
+                setToken(token);
+                navigate("/");
+              },
+              onError: (error: any) => {
+                if (error instanceof AxiosError) {
+                  window.alert(error.response!.data.details);
+                }
+              },
+            }
+          )
         )}
-        <FormLabel>Password</FormLabel>
-        <Input
-          type="password"
-          value={passwordInput}
-          onChange={handlePasswordInputChange}
-        />
-        {!isEmailError ? (
-          <FormHelperText>비밀번호를 입력하세요</FormHelperText>
-        ) : (
-          <FormErrorMessage>비밀번호를 입력하세요</FormErrorMessage>
-        )}
-        <Button colorScheme="blue" size="lg">
-          가입하기
-        </Button>
-      </FormControl>
+      >
+        <FormControl isRequired>
+          <FormLabel htmlFor="email">Email</FormLabel>
+          <Input
+            {...register("email", {
+              required: "이메일 입력은 필수입니다.",
+              pattern: {
+                value: REGEX.EMAIL,
+                message: "이메일 형식에 맞지 않습니다.",
+              },
+            })}
+            placeholder="이메일을 입력해주세요"
+            id="email"
+          />
+          <FormLabel htmlFor="password">Password</FormLabel>
+          <Input
+            {...register("password", {
+              required: "비밀번호 입력은 필수입니다.",
+              pattern: {
+                value: REGEX.PASSWORD,
+                message: "8자리 이상 비밀번호를 사용하세요.",
+              },
+            })}
+            placeholder="비밀번호를 입력해주세요"
+            type="password"
+            id="password"
+          />
+          <Button
+            type="submit"
+            disabled={!isValid}
+            isDisabled={!isValid}
+            colorScheme="blue"
+            size="lg"
+          >
+            가입하기
+          </Button>
+          <FormHelperText
+            onClick={() => navigate("/login")}
+            cursor="pointer"
+            textDecoration="underline"
+          >
+            아이디가 이미 있으신가요?
+          </FormHelperText>
+        </FormControl>
+      </chakra.form>
     </>
   );
 };
