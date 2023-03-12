@@ -1,7 +1,7 @@
-import Auth from "@components/HOC/Auth";
-import LoginPage from "@pages/LoginPage";
-import SignupPage from "@pages/SignupPage";
-import HomePage from "@pages/HomePage";
+import Auth from "@/components/HOC/Auth";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
+import HomePage from "@/pages/HomePage";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
